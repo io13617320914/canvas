@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+<canvas id="canvas">你的浏览器不支持canvas</canvas>
+<div>
+    <button id="mask">加蒙版</button>
+    <button id="scale">缩放</button>
+</div>
+</body>
+<script>
+
+    window.onload = function () {
+        if(!canvas.getContext) return;
+        let ctx = canvas.getContext('2d');
+        let graphical = [];
+        graphical[0] = {house_id: null, points: []};
+        graphical[1] = {house_id: null, points: []};
+
+        graphical[0].points = [
+            {x: 101, y: 327},
+            {x: 97, y: 348},
+            {x: 99, y: 386},
+            {x: 99, y: 402},
+            {x: 119, y: 415},
+            {x: 383, y: 410},
+            {x: 394, y: 377},
+            {x: 391, y: 343},
+            {x: 386, y: 321},
+            {x: 379, y: 325},
+            {x: 99, y: 325}];
+        graphical[1].points = [
+            {x: 442, y: 321},
+            {x: 436, y: 351},
+            {x: 436, y: 390},
+            {x: 441, y: 406},
+            {x: 456, y: 413},
+            {x: 723, y: 410},
+            {x: 728, y: 371},
+            {x: 722, y: 345},
+            {x: 718, y: 326},
+            {x: 712, y: 321},
+            {x: 442, y: 320},
+        ];
+        let drawMask = true;
+        mask.onclick = function () {
+            drawMask = true;
+        }
+        scale.onclick = function () {
+            drawMask = false;
+        }
+
+        let img = new Image();
+        img.src = "../img/electronic-map.png";
+        img.onload = function () {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0, img.width, img.height);
+            ctx.createImageData(img.width, img.width);
+            console.log(ctx.getImageData(0, 0, img.width, img.height))
+
+        };
+
+        canvas.addEventListener('click', (e) => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, img.width, img.height);
+            graphical.forEach((v) => {
+                ctx.beginPath();
+                v.points.forEach((p) => {
+                    ctx.lineTo(p.x, p.y);
+                });
+                ctx.closePath();
+                if (ctx.isPointInPath(e.offsetX, e.offsetY)) {
+                    console.log(v.house_id, "house_id");
+                    if (drawMask) {
+                        ctx.fillStyle = "rgba(0,0,0,0.5)";
+                        ctx.fill();
+                    } else { //放大
+                        let MINX = Math.min.apply(Math, v.points.map(function(o) {return o.x}));
+                        let MINY = Math.min.apply(Math, v.points.map(function(o) {return o.y}));
+                        let MAXX = Math.max.apply(Math, v.points.map(function(o) {return o.x}));
+                        let MAXY = Math.max.apply(Math, v.points.map(function(o) {return o.y}));
+                        let width = MAXX - MINX;
+                        let height = MAXY - MINY;
+                        let ratio = 1.2;
+                        let startX =  MINX - width/2*(ratio-1);
+                        let startY =  MINY - height/2*(ratio-1);
+                        ctx.drawImage(img,MINX,MINY, width,height,startX,startY,width*ratio,height*ratio);
+
+                    }
+                }
+            });
+        });
+    }
+
+</script>
+</html>
