@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+<canvas id="canvas" >你的浏览器不支持canvas</canvas>
+</body>
+<script>
+    window.onload = function () {
+        if(!canvas.getContext) return;
+        let cxt = canvas.getContext('2d');
+        let graphical = [];
+        graphical[0] = {house_id: null, points: []};
+        let index = 0;
+        let restorePoint = {};
+        let clickStart = {};
+        let clickEnd = {};
+        let img = new Image();
+        img.src = "../img/electronic-map.png";
+        img.onload = function () {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            cxt.drawImage(img, 0, 0, img.width, img.height);
+        };
+
+        canvas.addEventListener('click', (e) => {
+            graphical[index].points.push({x: e.offsetX, y: e.offsetY});
+            cxt.beginPath();
+            cxt.arc(e.offsetX, e.offsetY, 3, 0, Math.PI * 2);
+            cxt.strokeStyle = "#000";
+            cxt.stroke();
+
+            clickEnd = {x: e.offsetX, y: e.offsetY};
+            cxt.beginPath();
+            cxt.lineWidth = 1;
+            cxt.moveTo(clickStart.x, clickStart.y);
+            cxt.lineTo(clickEnd.x, clickEnd.y);
+            cxt.strokeStyle = "#ff582a";
+            cxt.stroke();
+            clickStart = clickEnd;
+
+            restorePoint = cxt.getImageData(0, 0, canvas.width, canvas.height);
+            canvas.addEventListener('mousemove', mousemove);
+        });
+
+        function mousemove(e) {
+            if (graphical[index].points.length > 0) {
+                cxt.putImageData(restorePoint, 0, 0);
+                cxt.beginPath();
+                cxt.moveTo(clickEnd.x, clickEnd.y);
+                cxt.lineTo(e.offsetX, e.offsetY);
+                cxt.strokeStyle = "#ff582a";
+                cxt.stroke();
+            }
+        }
+
+        document.oncontextmenu = function (e) {
+            e.preventDefault();
+        }
+        canvas.addEventListener('mousedown', (e) => {
+            if (e.button == 2) {//右键
+                index++;
+                clickStart = [];
+                graphical[index] = {house_id: null, points: []};
+                console.log(graphical);
+                cxt.clearRect(0, 0, canvas.width, canvas.height);
+                //重绘
+                cxt.drawImage(img, 0, 0, img.width, img.height);
+                graphical.forEach((v) => {
+                    cxt.beginPath();
+                    v.points.forEach((p) => {
+                        cxt.lineTo(p.x, p.y);
+                    });
+                    cxt.closePath();
+                    cxt.stroke();
+                });
+                canvas.removeEventListener('mousemove', mousemove);
+            }
+        });
+    }
+
+</script>
+</html>
