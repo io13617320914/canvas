@@ -69,7 +69,7 @@
                 index++;
                 clickStart = [];
                 graphical[index] = {house_id: null, points: []};
-                console.log(graphical);
+                console.log(graphical);//在这里提交graphical保存到数据库,以供polygon-operation使用
                 cxt.clearRect(0, 0, canvas.width, canvas.height);
                 //重绘
                 cxt.drawImage(img, 0, 0, img.width, img.height);
