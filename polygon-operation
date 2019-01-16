@@ -21,7 +21,7 @@
     window.onload = function () {
         if(!canvas.getContext) return;
         let ctx = canvas.getContext('2d');
-        let graphical = [];
+        let graphical = [];//应该来自设置部分提交的数据. 下面为了示例默认设置了两个多边形
         graphical[0] = {house_id: null, points: []};
         graphical[1] = {house_id: null, points: []};
 
