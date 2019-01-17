@@ -26,7 +26,7 @@
 
     window.onload = function () {
         if (!canvas.getContext) return;
-        let ctx = canvas.getContext('2d');
+        let ctx = canvas.getContext('2d',{alpha: false});
         let opacityCtx = opacityCanvas.getContext('2d');
         let graphical = [];
         graphical[0] = {house_id: null, points: []};
