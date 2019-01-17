@@ -4,13 +4,19 @@
     <meta charset="UTF-8">
     <title></title>
     <style>
-        canvas {
-            border: 1px solid red;
+        body {
+            position: relative;
+        }
+        #opacityCanvas {
+            position: absolute;
+            left: 0;
+            top: 0;
         }
     </style>
 </head>
 <body>
 <canvas id="canvas">你的浏览器不支持canvas</canvas>
+<canvas id="opacityCanvas"></canvas>
 <div>
     <button id="mask">加蒙版</button>
     <button id="scale">缩放</button>
@@ -19,9 +25,10 @@
 <script>
 
     window.onload = function () {
-        if(!canvas.getContext) return;
+        if (!canvas.getContext) return;
         let ctx = canvas.getContext('2d');
-        let graphical = [];//应该来自设置部分提交的数据. 下面为了示例默认设置了两个多边形
+        let opacityCtx = opacityCanvas.getContext('2d');
+        let graphical = [];
         graphical[0] = {house_id: null, points: []};
         graphical[1] = {house_id: null, points: []};
 
@@ -61,40 +68,43 @@
         let img = new Image();
         img.src = "../img/electronic-map.png";
         img.onload = function () {
-            canvas.width = img.width;
-            canvas.height = img.height;
+            opacityCanvas.width = canvas.width = img.width;
+            opacityCanvas.height = canvas.height = img.height;
             ctx.drawImage(img, 0, 0, img.width, img.height);
-            ctx.createImageData(img.width, img.width);
-            console.log(ctx.getImageData(0, 0, img.width, img.height))
-
         };
 
-        canvas.addEventListener('click', (e) => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0, img.width, img.height);
+        opacityCanvas.addEventListener('click', (e) => {
+            opacityCtx.clearRect(0, 0,opacityCanvas.width, opacityCanvas.height);
             graphical.forEach((v) => {
-                ctx.beginPath();
+                opacityCtx.beginPath();
                 v.points.forEach((p) => {
-                    ctx.lineTo(p.x, p.y);
+                    opacityCtx.lineTo(p.x, p.y);
                 });
-                ctx.closePath();
-                if (ctx.isPointInPath(e.offsetX, e.offsetY)) {
+                opacityCtx.closePath();
+                if (opacityCtx.isPointInPath(e.offsetX, e.offsetY)) {
                     console.log(v.house_id, "house_id");
                     if (drawMask) {
-                        ctx.fillStyle = "rgba(0,0,0,0.5)";
-                        ctx.fill();
+                        opacityCtx.fillStyle = "rgba(0,0,0,0.5)";
+                        opacityCtx.fill();
                     } else { //放大
-                        let MINX = Math.min.apply(Math, v.points.map(function(o) {return o.x}));
-                        let MINY = Math.min.apply(Math, v.points.map(function(o) {return o.y}));
-                        let MAXX = Math.max.apply(Math, v.points.map(function(o) {return o.x}));
-                        let MAXY = Math.max.apply(Math, v.points.map(function(o) {return o.y}));
+                        let MINX = Math.min.apply(Math, v.points.map(function (o) {
+                            return o.x
+                        }));
+                        let MINY = Math.min.apply(Math, v.points.map(function (o) {
+                            return o.y
+                        }));
+                        let MAXX = Math.max.apply(Math, v.points.map(function (o) {
+                            return o.x
+                        }));
+                        let MAXY = Math.max.apply(Math, v.points.map(function (o) {
+                            return o.y
+                        }));
                         let width = MAXX - MINX;
                         let height = MAXY - MINY;
                         let ratio = 1.2;
-                        let startX =  MINX - width/2*(ratio-1);
-                        let startY =  MINY - height/2*(ratio-1);
-                        ctx.drawImage(img,MINX,MINY, width,height,startX,startY,width*ratio,height*ratio);
-
+                        let startX = MINX - width / 2 * (ratio - 1);
+                        let startY = MINY - height / 2 * (ratio - 1);
+                        opacityCtx.drawImage(img, MINX, MINY, width, height, startX, startY, width * ratio, height * ratio);
                     }
                 }
             });
